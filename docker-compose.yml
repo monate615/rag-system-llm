@@ -1,0 +1,114 @@
+version: "3.8"
+
+services:
+  frontend:
+    image: quivr-frontend-prebuilt
+    pull_policy: never
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_ENV=local
+        - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
+        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        - NEXT_PUBLIC_CMS_URL=${NEXT_PUBLIC_CMS_URL}
+        - NEXT_PUBLIC_FRONTEND_URL=${NEXT_PUBLIC_FRONTEND_URL}
+        - NEXT_PUBLIC_AUTH_MODES=${NEXT_PUBLIC_AUTH_MODES}
+    container_name: web
+    depends_on:
+      - backend-core
+    restart: always
+    ports:
+      - 3000:3000
+
+  backend-core:
+    image: stangirard/quivr-backend-prebuilt:latest
+    pull_policy: if_not_present
+    env_file:
+      - .env
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    container_name: backend-core
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: [ "CMD", "curl", "http://localhost:5050/healthz" ]
+    command:
+      - "uvicorn"
+      - "quivr_api.main:app"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "5050"
+      - "--workers"
+      - "6"
+    restart: always
+    volumes:
+      - ./backend/:/code/
+    ports:
+      - 5050:5050
+
+  redis:
+    image: redis:latest@sha256:a7cee7c8178ff9b5297cb109e6240f5072cdaaafd775ce6b586c3c704b06458e
+    container_name: redis
+    restart: always
+    ports:
+      - 6379:6379
+
+  worker:
+    pull_policy: if_not_present
+    image: stangirard/quivr-backend-prebuilt:latest
+    env_file:
+      - .env
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    container_name: worker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: celery -A quivr_api.celery_worker worker -l info
+    restart: always
+    depends_on:
+      - redis
+
+  beat:
+    image: stangirard/quivr-backend-prebuilt:latest
+    pull_policy: if_not_present
+    env_file:
+      - .env
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    container_name: beat
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: celery -A quivr_api.celery_worker beat -l info
+    restart: always
+    depends_on:
+      - redis
+
+  flower:
+    image: stangirard/quivr-backend-prebuilt:latest
+    pull_policy: if_not_present
+    env_file:
+      - .env
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    container_name: flower
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: celery -A quivr_api.celery_worker flower -l info --port=5555
+    restart: always
+    depends_on:
+      - redis
+      - worker
+      - beat
+    ports:
+      - 5555:5555
+
+networks:
+  quivr-network:
+    driver: bridge

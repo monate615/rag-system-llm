@@ -1,0 +1,19 @@
+@use "styles/Radius.module.scss";
+@use "styles/Spacings.module.scss";
+@use "styles/Typography.module.scss";
+
+.tag_wrapper {
+  padding: Spacings.$spacing01;
+  padding-inline: Spacings.$spacing03;
+  border-radius: Radius.$big;
+  width: fit-content;
+  font-size: Typography.$tiny;
+
+  &.primary {
+    background-color: var(--background-special-1);
+  }
+
+  &.gold {
+    background-color: var(--gold);
+  }
+}

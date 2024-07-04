@@ -1,0 +1,28 @@
+@use "styles/Radius.module.scss";
+@use "styles/Spacings.module.scss";
+@use "styles/Typography.module.scss";
+
+.mention_item_wrapper {
+  display: flex;
+  cursor: pointer;
+  gap: Spacings.$spacing03;
+  align-items: center;
+  border-radius: Radius.$normal;
+  overflow: hidden;
+  padding: Spacings.$spacing02;
+  min-height: 2rem;
+
+  &:hover,
+  &.selected {
+    background-color: var(--background-special-1);
+    font-weight: 550;
+  }
+
+  .brain_name {
+    @include Typography.EllipsisOverflow;
+  }
+
+  .dark_image {
+    filter: invert(100%);
+  }
+}

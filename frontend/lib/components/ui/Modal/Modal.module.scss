@@ -1,0 +1,58 @@
+@use "styles/BoxShadow.module.scss";
+@use "styles/Radius.module.scss";
+@use "styles/ScreenSizes.module.scss";
+@use "styles/Spacings.module.scss";
+@use "styles/ZIndexes.module.scss";
+
+.modal_container {
+  display: flex;
+  background-color: var(--background-blur);
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  z-index: ZIndexes.$modal;
+  align-items: center;
+  justify-content: center;
+
+  .modal_content_wrapper {
+    display: flex;
+    flex-direction: column;
+    border-radius: Radius.$big;
+    background-color: var(--background-0);
+    padding: Spacings.$spacing05;
+    cursor: auto;
+    box-shadow: BoxShadow.$medium;
+    max-width: 90vw;
+    width: 35vw;
+    height: 80vh;
+    overflow: auto;
+
+    &.auto {
+      height: auto;
+    }
+
+    &.big {
+      width: 50vw;
+      height: 95vh;
+    }
+
+    &.white {
+      background-color: var(--white-0);
+      color: var(--text-0);
+    }
+
+    @media (max-width: ScreenSizes.$small) {
+      min-width: 90vw;
+    }
+
+    .close_button_wrapper {
+      display: inline-flex;
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: Spacings.$spacing05;
+      border-radius: 50;
+      outline: none;
+    }
+  }
+}

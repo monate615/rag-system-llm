@@ -1,0 +1,19 @@
+@use "styles/Radius.module.scss";
+@use "styles/Spacings.module.scss";
+@use "styles/Typography.module.scss";
+
+.brain_name_wrapper {
+  display: flex;
+  align-items: center;
+  gap: Spacings.$spacing03;
+  color: var(--text-3);
+  overflow: hidden;
+
+  .dark_image {
+    filter: invert(100%);
+  }
+
+  .brain_name {
+    @include Typography.EllipsisOverflow;
+  }
+}

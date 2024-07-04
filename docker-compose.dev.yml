@@ -1,0 +1,92 @@
+version: "3.8"
+
+services:
+  backend-core:
+    image: backend-base:latest
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    pull_policy: never
+    env_file:
+      - .env
+    build:
+      context: backend
+      dockerfile: Dockerfile.dev
+      cache_from:
+        - backend-base:latest
+      args:
+        - DEV_MODE=true
+    container_name: backend-core
+    volumes:
+      - ./backend/:/code/
+    command:
+      - "uvicorn"
+      - "quivr_api.main:app"
+      - "--reload"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "5050"
+      - "--log-level"
+      - "info"
+    restart: always
+    ports:
+      - 5050:5050
+      - 5678:5678 # debug port
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+    ports:
+      - 6379:6379
+
+  worker:
+    pull_policy: never
+    image: backend-base:latest
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
+    container_name: worker
+    volumes:
+      - ./backend/:/code/
+    command: "celery -A quivr_api.celery_worker worker -l info"
+    restart: always
+    depends_on:
+      - redis
+
+  beat:
+    image: backend-base:latest
+    pull_policy: never
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
+    container_name: beat
+    command: celery -A quivr_api.celery_worker beat -l info
+    volumes:
+      - ./backend/:/code/
+    restart: always
+    depends_on:
+      - redis
+
+  flower:
+    image: backend-base:latest
+    pull_policy: never
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
+    container_name: flower
+    command: celery -A quivr_api.celery_worker flower -l info --port=5555
+    volumes:
+      - ./backend/:/code/
+    restart: always
+    depends_on:
+      - redis
+      - worker
+      - beat
+    ports:
+      - 5555:5555

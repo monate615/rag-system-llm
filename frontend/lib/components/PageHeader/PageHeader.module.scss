@@ -1,0 +1,41 @@
+@use "styles/ScreenSizes.module.scss";
+@use "styles/Spacings.module.scss";
+@use "styles/Typography.module.scss";
+
+.page_header_wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: Spacings.$spacing04;
+  padding-left: Spacings.$spacing09;
+  border-bottom: 1px solid var(--border-1);
+  height: 3rem;
+  width: 100%;
+
+  .left {
+    @include Typography.H2;
+    display: flex;
+    align-items: center;
+    gap: Spacings.$spacing03;
+    visibility: visible;
+
+    &.menu_closed {
+      visibility: visible;
+      padding-left: Spacings.$spacing07;
+    }
+  }
+
+  .buttons_wrapper {
+    display: flex;
+    gap: Spacings.$spacing04;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: ScreenSizes.$small) {
+    justify-content: flex-end;
+    .left {
+      display: none;
+    }
+  }
+}
